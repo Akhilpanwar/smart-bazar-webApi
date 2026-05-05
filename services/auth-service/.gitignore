@@ -1,0 +1,16 @@
+# Ignore build output
+dist/
+
+# Ignore dependencies
+node_modules/
+
+# Ignore environment variables
+.env
+.env.example
+private.key
+public.key
+*.key
+# Optional: VSCode settings, logs, etc.
+.vscode/
+*.log
+Dockerfile

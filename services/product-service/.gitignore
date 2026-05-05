@@ -1,0 +1,15 @@
+# Ignore build output
+dist/
+
+# Ignore dependencies
+node_modules/
+
+# Ignore environment variables
+.env
+Dockerfile
+# Optional: VSCode settings, logs, etc.
+.vscode/
+*.log
+.env.example
+fixproducts.ts
+runMigration.ts

@@ -1,0 +1,31 @@
+{
+  "name": "smart-bazar-Api",
+  "private": true,
+  "description": "SmartBazar microservices: API gateway + auth + product (catalog) services",
+  "workspaces": [
+    "gateway",
+    "services/auth-service",
+    "services/product-service"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n gateway,auth,product -c cyan,magenta,green \"npm run dev -w @smartbazar/api-gateway\" \"npm run dev -w @smartbazar/auth-service\" \"npm run dev -w @smartbazar/product-service\"",
+    "build": "npm run build -w @smartbazar/api-gateway && npm run build -w @smartbazar/auth-service && npm run build -w @smartbazar/product-service",
+    "dev:gateway": "npm run dev -w @smartbazar/api-gateway",
+    "dev:auth": "npm run dev -w @smartbazar/auth-service",
+    "dev:product": "npm run dev -w @smartbazar/product-service"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^25.5.2",
+    "concurrently": "^9.1.2",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^9.0.3"
+  }
+}

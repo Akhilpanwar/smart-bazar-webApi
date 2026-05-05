@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Logs
+logs/
+*.log
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Temporary files
+tmp/
+*.tmp
+*.swp
+
+# Coverage
+coverage/
+
+# Database
+*.db
+
+# Misc
+*.bak
+*.gen.*
+
+# Service-specific (optional but clean)
+services/*/node_modules/
+services/*/dist/
+services/*/build/
+services/*/.env.example
+services/*/.env
+services/*/Dockerfile
+
+gateway/node_modules/
+gateway/dist/
+gateway/build/
+gateway/.env.example
+gateway/.env
+gateway/Dockerfile
