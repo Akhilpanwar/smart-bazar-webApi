@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import fs from "fs";
 
-const privateKey = fs.readFileSync("private.key");
+const privateKey = fs.readFileSync("keys/private.key", "utf8");
 
 export const generateTokens = (user: { id: string }) => {
   const accessToken = jwt.sign(user, privateKey, {
