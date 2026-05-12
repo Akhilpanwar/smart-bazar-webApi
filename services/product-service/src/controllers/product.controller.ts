@@ -210,6 +210,7 @@ const productController = {
   /* ---------------------------------- */
   async getProductsCategory(req: Request, res: Response) {
     try {
+      console.log("Fetching categories...", req.query);
       const categories = await Category.find().lean();
 
       res.status(200).json({

@@ -4,7 +4,7 @@ import fs from "fs";
 import path from "path";
 
 const PUBLIC_KEY = fs.readFileSync(
-  path.join(__dirname, "../keys/public.key"),
+  path.join(__dirname, "../../keys/public.key"),
   "utf8",
 );
 
