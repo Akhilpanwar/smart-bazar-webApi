@@ -66,7 +66,10 @@ export const socialCallback = async (req: Request, res: Response) => {
 
     const accessToken = await getAccessToken(provider, code);
     const socialUser = await getSocialUser(provider, accessToken);
-    const userData = normalizeUser(provider, socialUser);
+    const userData = normalizeUser(
+      provider as "google" | "facebook",
+      socialUser,
+    );
     const user = await findOrCreateUser(userData);
 
     const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";

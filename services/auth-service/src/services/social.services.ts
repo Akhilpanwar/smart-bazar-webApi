@@ -1,6 +1,9 @@
 import axios from "axios";
 import { SOCIAL_PROVIDERS } from "../config/social.config";
-import { User } from "../models/user.model";
+import { Auth } from "../models/auth.model"; // Auth model storing credentials only
+
+const USER_SERVICE_URL =
+  process.env.USER_SERVICE_URL || "http://localhost:4002/api/v1/users";
 
 const env = () => ({
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
@@ -16,25 +19,56 @@ export const findOrCreateUser = async (userData: {
   name: string;
   email: string;
   avatar: string;
-  provider: string;
+  provider: "google" | "facebook";
 }) => {
-  let user = await User.findOne({ email: userData.email });
+  // 1. Check if user credentials exist in Auth DB
+  let authUser = await Auth.findOne({ email: userData.email });
 
-  if (!user) {
+  if (!authUser) {
+    // 2. Build Auth document (Credentials only)
     const doc: Record<string, unknown> = {
-      name: userData.name,
       email: userData.email,
-      avatar: userData.avatar || "",
+      isVerified: true, // Social OAuth emails are pre-verified
     };
+
     if (userData.provider === "google") {
       doc.googleId = userData.providerId;
     } else if (userData.provider === "facebook") {
       doc.facebookId = userData.providerId;
     }
-    user = await User.create(doc);
+
+    authUser = await Auth.create(doc);
+
+    // 3. Delegate profile creation (Name/Avatar) to User Service
+    try {
+      await axios.post(`${USER_SERVICE_URL}/internal/profile`, {
+        authId: authUser._id,
+        name: userData.name,
+        email: userData.email,
+        avatar: userData.avatar,
+      });
+    } catch (err) {
+      // Rollback Auth creation if profile creation fails
+      await Auth.findByIdAndDelete(authUser._id);
+      throw new Error("Failed to sync social user profile");
+    }
+  } else {
+    // 4. Update provider ID if user exists but linked social provider is missing
+    let shouldUpdate = false;
+    if (userData.provider === "google" && !authUser.googleId) {
+      authUser.googleId = userData.providerId;
+      shouldUpdate = true;
+    } else if (userData.provider === "facebook" && !authUser.facebookId) {
+      authUser.facebookId = userData.providerId;
+      shouldUpdate = true;
+    }
+
+    if (shouldUpdate) {
+      await authUser.save();
+    }
   }
 
-  return user;
+  return authUser;
 };
 
 export const getAccessToken = async (
@@ -87,7 +121,10 @@ export const getSocialUser = async (
   return res.data as Record<string, unknown>;
 };
 
-export const normalizeUser = (provider: string, data: Record<string, unknown>) => {
+export const normalizeUser = (
+  provider: "google" | "facebook",
+  data: Record<string, unknown>,
+) => {
   if (provider === "google") {
     const pic = data.picture;
     const avatar =
@@ -97,7 +134,7 @@ export const normalizeUser = (provider: string, data: Record<string, unknown>) =
       name: String(data.name ?? ""),
       email: String(data.email ?? ""),
       avatar,
-      provider: "google",
+      provider: "google" as const,
     };
   }
 
@@ -108,6 +145,6 @@ export const normalizeUser = (provider: string, data: Record<string, unknown>) =
     name: `${String(data.first_name ?? "")} ${String(data.last_name ?? "")}`.trim(),
     email: String(data.email ?? `${data.id}@facebook.com`),
     avatar: picture?.data?.url ?? "",
-    provider: "facebook",
+    provider: "facebook" as const,
   };
 };
