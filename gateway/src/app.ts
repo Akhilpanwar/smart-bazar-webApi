@@ -1,13 +1,13 @@
 import express from "express";
 import cors from "cors";
 import { createProxyMiddleware } from "http-proxy-middleware";
-
 import cookieParser from "cookie-parser";
 import { verifyJWT } from "./middleware/auth.middleware";
-const CLIENT_ORIGIN = process.env.CLIENT_URL || "http://localhost:5173";
+const CLIENT_ORIGIN = "http://localhost:5173";
 const AUTH_URL = process.env.AUTH_SERVICE_URL || "http://127.0.0.1:4001";
 const PRODUCT_URL = process.env.PRODUCT_SERVICE_URL || "http://127.0.0.1:4000";
-
+const USER_SERVICE_URL =
+  process.env.USER_SERVICE_URL || "http://127.0.0.1:4002";
 export const app = express();
 
 app.set("trust proxy", 1);
@@ -25,7 +25,7 @@ app.get("/health", (_req, res) => {
   res.json({
     ok: true,
     service: "smartbazar-api-gateway",
-    upstream: { auth: AUTH_URL, product: PRODUCT_URL },
+    upstream: { auth: AUTH_URL, product: PRODUCT_URL, user: USER_SERVICE_URL },
   });
 });
 
@@ -50,6 +50,14 @@ app.use(
   "/api/v1/auth",
   createProxyMiddleware({
     target: AUTH_URL,
+    ...proxyOpts,
+  }),
+);
+app.use(
+  "/api/v1/users",
+  verifyJWT,
+  createProxyMiddleware({
+    target: USER_SERVICE_URL,
     ...proxyOpts,
   }),
 );

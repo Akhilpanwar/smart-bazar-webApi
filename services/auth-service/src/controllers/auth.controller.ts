@@ -1,10 +1,14 @@
 import { sendAuthResponse } from "../utils/sendAuthResponse";
 import { handleError } from "../utils/handleError";
 import type { Request, Response } from "express";
-import { User } from "../models/user.model";
-import generateAvatar from "../utils/generateAvatar";
+import { Auth } from "../models/auth.model";
 import bcrypt from "bcrypt";
+import axios from "axios";
 import { cookieOptions } from "../utils/cookieOption";
+
+const USER_SERVICE_URL =
+  process.env.USER_SERVICE_URL || "http://localhost:4002/api/v1/users";
+const INTERNAL_SERVICE_KEY = process.env.INTERNAL_SERVICE_KEY;
 
 export const AuthController = {
   async register(req: Request, res: Response) {
@@ -12,75 +16,66 @@ export const AuthController = {
       const { name, email, password } = req.body;
 
       if (!name || !email || !password) {
-        return res.status(400).json({ message: "All fields required" });
+        return res.status(400).json({ message: "All fields are required" });
       }
 
-      const existingUser = await User.findOne({ email });
-      if (existingUser) {
-        return res.status(409).json({ message: "User exists" });
+      const existingAuth = await Auth.findOne({ email });
+      if (existingAuth) {
+        return res.status(409).json({ message: "User already exists" });
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
-      const avatar = await generateAvatar(name);
 
-      const user = await User.create({
-        name,
+      const authUser = await Auth.create({
         email,
         password: hashedPassword,
-        avatar,
       });
 
-      return sendAuthResponse(res, user, "Registered successfully");
-    } catch (err) {
-      return handleError(res, err, "Register error");
-    }
-  },
-
-  async getMe(req: Request & { user?: { id: string } }, res: Response) {
-    try {
-      const user = await User.findById(req.user?.id).select("-password");
-
-      if (!user) {
-        return res.status(404).json({
-          message: "User not found",
-        });
+      // Delegate profile creation to User Service with secret key header
+      try {
+        await axios.post(
+          `${USER_SERVICE_URL}/internal/profile`,
+          {
+            authId: authUser._id,
+            name,
+            email,
+          },
+          {
+            headers: {
+              "x-internal-service-key": INTERNAL_SERVICE_KEY,
+            },
+          },
+        );
+      } catch (serviceErr) {
+        // Rollback if User Service fails
+        await Auth.findByIdAndDelete(authUser._id);
+        return res
+          .status(500)
+          .json({ message: "Failed to initialize user profile" });
       }
 
-      return res.status(200).json({
-        message: "User fetched successfully",
-        user,
-      });
-    } catch (error) {
-      console.error("GetMe error:", error);
-
-      return res.status(500).json({
-        message: "Server error",
-      });
+      return sendAuthResponse(res, authUser, "Registered successfully");
+    } catch (err) {
+      return handleError(res, err, "Register error");
     }
   },
 
   async login(req: Request, res: Response) {
     try {
       const { email, password } = req.body;
-      const user = await User.findOne({ email });
 
-      if (!user) {
+      const authUser = await Auth.findOne({ email }).select("+password");
+
+      if (!authUser || !authUser.password) {
         return res.status(400).json({ message: "Invalid credentials" });
       }
 
-      if (!user.password) {
-        return res.status(400).json({
-          message: "Login using Google",
-        });
-      }
-
-      const isMatch = await bcrypt.compare(password, user.password);
-
+      const isMatch = await bcrypt.compare(password, authUser.password);
       if (!isMatch) {
         return res.status(400).json({ message: "Invalid credentials" });
       }
 
-      return sendAuthResponse(res, user, "Login successful");
+      return sendAuthResponse(res, authUser, "Login successful");
     } catch (err) {
       return handleError(res, err, "Login error");
     }
@@ -88,10 +83,7 @@ export const AuthController = {
 
   async logout(_req: Request, res: Response) {
     try {
-      res.cookie("smartbazar", "", {
-        ...cookieOptions,
-        maxAge: 0,
-      });
+      res.cookie("smartbazar", "", { ...cookieOptions, maxAge: 0 });
       return res.json({ message: "Logged out successfully" });
     } catch (err) {
       return handleError(res, err, "Logout error");

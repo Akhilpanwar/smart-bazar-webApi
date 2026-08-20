@@ -5,19 +5,21 @@
   "workspaces": [
     "gateway",
     "services/auth-service",
-    "services/product-service"
+    "services/product-service",
+    "services/user-service"
   ],
   "scripts": {
-    "dev": "concurrently -k -n gateway,auth,product -c cyan,magenta,green \"npm run dev -w @smartbazar/api-gateway\" \"npm run dev -w @smartbazar/auth-service\" \"npm run dev -w @smartbazar/product-service\"",
+    "dev": "concurrently -k -n gateway,auth,product,user -c cyan,magenta,green,yellow \"npm run dev -w @smartbazar/api-gateway\" \"npm run dev -w @smartbazar/auth-service\" \"npm run dev -w @smartbazar/product-service\" \"npm run dev -w @smartbazar/user-service\"",
     "build": "npm run build -w @smartbazar/api-gateway && npm run build -w @smartbazar/auth-service && npm run build -w @smartbazar/product-service",
     "dev:gateway": "npm run dev -w @smartbazar/api-gateway",
     "dev:auth": "npm run dev -w @smartbazar/auth-service",
-    "dev:product": "npm run dev -w @smartbazar/product-service"
+    "dev:product": "npm run dev -w @smartbazar/product-service",
+    "dev:user": "npm run dev -w @smartbazar/user-service"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.10",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^25.5.2",
+    "@types/node": "^25.9.5",
     "concurrently": "^9.1.2",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3"

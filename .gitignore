@@ -12,8 +12,14 @@ logs/
 # Environment files
 .env
 .env.*
-!.env.example
+**/.env
+**/.env.*
 
+
+
+# Private keys
+**/keys/private.key
+**/keys/*.pem
 # OS files
 .DS_Store
 Thumbs.db
