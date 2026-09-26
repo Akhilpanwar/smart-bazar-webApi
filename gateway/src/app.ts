@@ -3,11 +3,14 @@ import cors from "cors";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import cookieParser from "cookie-parser";
 import { verifyJWT } from "./middleware/auth.middleware";
+import { verifyInternalKey } from "./middleware/InternalAuth";
+import dotenv from "dotenv";
+
+dotenv.config();
 const CLIENT_ORIGIN = "http://localhost:5173";
-const AUTH_URL = process.env.AUTH_SERVICE_URL || "http://127.0.0.1:4001";
-const PRODUCT_URL = process.env.PRODUCT_SERVICE_URL || "http://127.0.0.1:4000";
-const USER_SERVICE_URL =
-  process.env.USER_SERVICE_URL || "http://127.0.0.1:4002";
+const AUTH_URL = process.env.AUTH_SERVICE_URL;
+const PRODUCT_URL = process.env.PRODUCT_SERVICE_URL;
+const USER_SERVICE_URL = process.env.USER_SERVICE_URL;
 export const app = express();
 
 app.set("trust proxy", 1);
@@ -32,7 +35,7 @@ app.get("/health", (_req, res) => {
 const proxyOpts = { changeOrigin: true, xfwd: true } as const;
 
 app.use(
-  "/api/v1/products",
+  "/api/v1/product-service",
   createProxyMiddleware({
     target: PRODUCT_URL,
     ...proxyOpts,
@@ -47,12 +50,28 @@ app.use(
   }),
 );
 app.use(
+  "/api/v1/cart",
+  verifyJWT,
+  createProxyMiddleware({
+    target: PRODUCT_URL,
+    ...proxyOpts,
+  }),
+);
+app.use(
   "/api/v1/auth",
   createProxyMiddleware({
     target: AUTH_URL,
     ...proxyOpts,
   }),
 );
+// app.use(
+//   "/api/v1/users",
+//   verifyInternalKey,
+//   createProxyMiddleware({
+//     target: USER_SERVICE_URL,
+//     ...proxyOpts,
+//   }),
+// );
 app.use(
   "/api/v1/users",
   verifyJWT,

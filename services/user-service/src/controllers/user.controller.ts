@@ -35,7 +35,7 @@ export const userController = {
   // 2. Called strictly by Auth Service during registration/OAuth (No user token needed)
   async createProfileInternal(req: Request, res: Response) {
     try {
-      const { authId, name, avatar } = req.body;
+      const { authId, name, avatar, email } = req.body;
 
       if (!authId || !name) {
         return res
@@ -46,7 +46,8 @@ export const userController = {
       const profile = await UserProfile.create({
         authId,
         name,
-        avatar: avatar || "",
+        email: email,
+        avatar: avatar,
       });
 
       return res.status(201).json({

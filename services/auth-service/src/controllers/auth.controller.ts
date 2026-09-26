@@ -3,12 +3,13 @@ import { handleError } from "../utils/handleError";
 import type { Request, Response } from "express";
 import { Auth } from "../models/auth.model";
 import bcrypt from "bcrypt";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { cookieOptions } from "../utils/cookieOption";
+import dotenv from "dotenv";
 
-const USER_SERVICE_URL =
-  process.env.USER_SERVICE_URL || "http://localhost:4002/api/v1/users";
-const INTERNAL_SERVICE_KEY = process.env.INTERNAL_SERVICE_KEY;
+dotenv.config();
+const USER_SERVICE_URL = process.env.USER_SERVICE_URL;
+const INTERNAL_KEY = process.env.INTERNAL_SERVICE_KEY;
 
 export const AuthController = {
   async register(req: Request, res: Response) {
@@ -30,7 +31,7 @@ export const AuthController = {
         email,
         password: hashedPassword,
       });
-
+      const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff&size=200`;
       // Delegate profile creation to User Service with secret key header
       try {
         await axios.post(
@@ -39,14 +40,25 @@ export const AuthController = {
             authId: authUser._id,
             name,
             email,
+            avatar: avatarUrl,
           },
           {
             headers: {
-              "x-internal-service-key": INTERNAL_SERVICE_KEY,
+              "x-internal-service-key": INTERNAL_KEY,
             },
           },
         );
       } catch (serviceErr) {
+        if (axios.isAxiosError(serviceErr)) {
+          // console.error("User Service Error Details:", {
+          //   status: serviceErr.response?.status,
+          //   data: serviceErr.response?.data,
+          //   message: serviceErr.message,
+          // });
+        } else {
+          console.error("Unexpected Error in User Service Call:", serviceErr);
+        }
+
         // Rollback if User Service fails
         await Auth.findByIdAndDelete(authUser._id);
         return res

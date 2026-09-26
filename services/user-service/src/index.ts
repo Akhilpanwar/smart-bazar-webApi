@@ -23,7 +23,7 @@ app.use(cookieParser());
 connectDB();
 
 /** Paths: /auth/* (session API), /social-auth/* (OAuth) — no /api prefix (matches VITE_AUTH_URL). */
-app.use(userRoutes);
+app.use("/api/v1/users", userRoutes);
 
 const PORT = process.env.PORT || 4002;
 app.listen(PORT, () => {
