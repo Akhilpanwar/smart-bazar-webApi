@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { userController } from "../controllers/user.controller";
 const router = Router();
-router.get("/me", userController.getUser);
+
 router.post("/create-profile", userController.createProfileInternal);
 export default router;

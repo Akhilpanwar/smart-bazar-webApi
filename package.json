@@ -6,15 +6,21 @@
     "gateway",
     "services/auth-service",
     "services/product-service",
-    "services/user-service"
+    "services/user-service",
+    "services/order-service",
+    "services/cart-service",
+    "services/payment-service"
   ],
   "scripts": {
-    "dev": "concurrently -k -n gateway,auth,product,user -c cyan,magenta,green,yellow \"npm run dev -w @smartbazar/api-gateway\" \"npm run dev -w @smartbazar/auth-service\" \"npm run dev -w @smartbazar/product-service\" \"npm run dev -w @smartbazar/user-service\"",
-    "build": "npm run build -w @smartbazar/api-gateway && npm run build -w @smartbazar/auth-service && npm run build -w @smartbazar/product-service",
+    "dev": "concurrently -k -n gateway,auth,product,user,order,cart,payment -c cyan,magenta,green,yellow,blue,red,white \"npm run dev -w @smartbazar/api-gateway\" \"npm run dev -w @smartbazar/auth-service\" \"npm run dev -w @smartbazar/product-service\" \"npm run dev -w @smartbazar/user-service\" \"npm run dev -w @smartbazar/order-service\" \"npm run dev -w @smartbazar/cart-service\" \"npm run dev -w @smartbazar/payment-service\"",
+    "build": "npm run build -w @smartbazar/api-gateway && npm run build -w @smartbazar/auth-service && npm run build -w @smartbazar/product-service && npm run build -w @smartbazar/order-service && npm run build -w @smartbazar/cart-service && npm run build -w @smartbazar/payment-service",
     "dev:gateway": "npm run dev -w @smartbazar/api-gateway",
     "dev:auth": "npm run dev -w @smartbazar/auth-service",
     "dev:product": "npm run dev -w @smartbazar/product-service",
-    "dev:user": "npm run dev -w @smartbazar/user-service"
+    "dev:user": "npm run dev -w @smartbazar/user-service",
+    "dev:order": "npm run dev -w @smartbazar/order-service",
+    "dev:cart": "npm run dev -w @smartbazar/cart-service",
+    "dev:payment": "npm run dev -w @smartbazar/payment-service"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.10",
