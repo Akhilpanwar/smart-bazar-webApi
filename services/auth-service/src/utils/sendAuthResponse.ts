@@ -7,7 +7,7 @@ export const sendAuthResponse = (
   message: string,
 ) => {
   const u = user as { _id: { toString: () => string } };
-
+  const isProduction = process.env.NODE_ENV === "production";
   const { accessToken, refreshToken } = generateTokens({
     id: u._id.toString(),
   });
@@ -15,17 +15,16 @@ export const sendAuthResponse = (
   // 🍪 Access Token Cookie
   res.cookie("smartbazar-accessToken", accessToken, {
     httpOnly: true,
-    secure: true,
-    sameSite: "strict",
-    maxAge: 15 * 60 * 1000, // 15 min
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+    maxAge: 15 * 60 * 1000,
   });
 
-  // 🍪 Refresh Token Cookie
   res.cookie("smartbazar-refreshToken", refreshToken, {
     httpOnly: true,
-    secure: true,
-    sameSite: "strict",
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
   return res.status(200).json({

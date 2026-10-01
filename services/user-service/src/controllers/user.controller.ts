@@ -4,6 +4,7 @@ import { UserProfile } from "../models/user.model";
 export const userController = {
   // 1. Called by Client via API Gateway (Requires JWT token checked at Gateway)
   async getUser(req: Request, res: Response) {
+    console.log("getUser called with headers:", req.headers);
     try {
       // Injected into request header by API Gateway's verifyJWT middleware
       const authId = req.headers["x-user-id"] as string;

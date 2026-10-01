@@ -25,8 +25,7 @@ export interface AuthRequest extends Request {
 }
 
 export function verifyJWT(req: AuthRequest, res: Response, next: NextFunction) {
-  const token = req.cookies?.accessToken;
-
+  const token = req.cookies?.["smartbazar-accessToken"];
   if (!token) {
     return res.status(401).json({
       message: "Access token required",

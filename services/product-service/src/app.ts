@@ -17,7 +17,7 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/products", productRoutes);
+app.use("/", productRoutes);
 app.use(NotFound);
 app.use(ErrorHandler);
 

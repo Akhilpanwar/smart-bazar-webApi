@@ -4,7 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { connectDB } from "./config/db.config";
 import userRoutes from "./routes/user.routes";
-
+import internalUserRoutes from "./routes/internal.routes";
 dotenv.config();
 const app = express();
 
@@ -16,14 +16,15 @@ app.use(
     credentials: true,
   }),
 );
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 connectDB();
 
-/** Paths: /auth/* (session API), /social-auth/* (OAuth) — no /api prefix (matches VITE_AUTH_URL). */
-app.use("/api/v1/users", userRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/internal/users", internalUserRoutes);
 
 const PORT = process.env.PORT || 4002;
 app.listen(PORT, () => {

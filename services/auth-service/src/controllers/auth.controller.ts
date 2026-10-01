@@ -35,7 +35,7 @@ export const AuthController = {
       // Delegate profile creation to User Service with secret key header
       try {
         await axios.post(
-          `${USER_SERVICE_URL}/internal/profile`,
+          `${USER_SERVICE_URL}/internal-user-service/create-profile`,
           {
             authId: authUser._id,
             name,
@@ -50,13 +50,15 @@ export const AuthController = {
         );
       } catch (serviceErr) {
         if (axios.isAxiosError(serviceErr)) {
-          // console.error("User Service Error Details:", {
-          //   status: serviceErr.response?.status,
-          //   data: serviceErr.response?.data,
-          //   message: serviceErr.message,
-          // });
+          console.error("User Service Error:", {
+            url: serviceErr.config?.url,
+            method: serviceErr.config?.method,
+            status: serviceErr.response?.status,
+            data: serviceErr.response?.data,
+            message: serviceErr.message,
+          });
         } else {
-          console.error("Unexpected Error in User Service Call:", serviceErr);
+          console.error("Unexpected User Service Error:", serviceErr);
         }
 
         // Rollback if User Service fails
